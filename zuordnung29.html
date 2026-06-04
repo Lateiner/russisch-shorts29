@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch lernen: Zuordnungsspiel</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p.instruction {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        /* Responsive Anordnung via Flexbox */
+        .game-zone {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .column-title {
+            font-weight: bold;
+            color: #34495e;
+            text-align: center;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+        }
+
+        /* Drag-Elemente (Russisch) */
+        .draggable {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: grab;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            user-select: none;
+            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+            touch-action: none; /* Verhindert Scrolling beim Touchen des Elements */
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+        }
+
+        .draggable.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        /* Dropzonen (Deutsch) */
+        .dropzone-wrapper {
+            background: #f9f9f9;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .dropzone-wrapper.hovered {
+            background-color: #e8f4f8;
+            border-color: #3498db;
+        }
+
+        .meaning-text {
+            color: #555;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            pointer-events: none; /* Ignoriere Text bei Drop-Events */
+            font-weight: 500;
+        }
+
+        .dropzone {
+            width: 100%;
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Zustand bei richtiger Zuordnung */
+        .dropzone-wrapper.correct {
+            border-color: #2ecc71;
+            background-color: #e8f8f0;
+        }
+
+        .dropzone-wrapper.correct .draggable {
+            background-color: #2ecc71;
+            cursor: default;
+        }
+
+        /* Kontroll-Buttons und Ergebnis */
+        .feedback-zone {
+            text-align: center;
+            min-height: 60px;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #1a252f;
+        }
+
+        .btn-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #616a6b;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 28px;
+        }
+
+        .result-message.success {
+            color: #2ecc71;
+        }
+
+        /* RESPONSIVE DESIGN (Tablets & Smartphones) */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .game-container {
+                padding: 20px;
+            }
+
+            .game-zone {
+                flex-direction: column; /* Stapelt die Spalten untereinander */
+                gap: 30px;
+            }
+
+            .column-title {
+                margin-bottom: 10px;
+            }
+
+            .draggable {
+                padding: 12px;
+                font-size: 1.1rem;
+            }
+
+            .dropzone-wrapper {
+                min-height: 70px;
+            }
+
+            .btn-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Vokabeln zuordnen</h1>
+    <p class="instruction">Ziehe die russischen Begriffe per Drag & Drop (oder Touch) zur passenden deutschen Bedeutung.</p>
+
+    <div class="game-zone">
+        <!-- Linke Spalte: Russische Wörter -->
+        <div class="column" id="words-column">
+            <div class="column-title">Russisches Wort</div>
+        </div>
+
+        <!-- Rechte Spalte: Deutsche Bedeutungen -->
+        <div class="column" id="meanings-column">
+            <div class="column-title">Deutsche Bedeutung</div>
+            
+            <div class="dropzone-wrapper" data-match="шиворот-навыворот">
+                <div class="meaning-text">„verkehrt herum / auf links“</div>
+                <div class="dropzone"></div>
+            </div>
+
+            <div class="dropzone-wrapper" data-match="кофта">
+                <div class="meaning-text">„Jacke / Pullover“</div>
+                <div class="dropzone"></div>
+            </div>
+
+            <div class="dropzone-wrapper" data-match="переоденься">
+                <div class="meaning-text">„Zieh dich um!“</div>
+                <div class="dropzone"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feedback-zone">
+        <div class="btn-container">
+            <button class="btn" id="check-btn">Überprüfen</button>
+            <button class="btn btn-secondary" id="reset-btn">Neustart</button>
+        </div>
+        <div id="result" class="result-message"></div>
+    </div>
+</div>
+
+<script>
+    const words = ['шиворот-навыворот', 'кофта', 'переоденься'];
+    const wordsColumn = document.getElementById('words-column');
+    const checkBtn = document.getElementById('check-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const resultDiv = document.getElementById('result');
+    const dropzoneWrappers = document.querySelectorAll('.dropzone-wrapper');
+
+    let activeTouchElement = null;
+
+    // --- SPIEL INITIALISIEREN / MISCHEN ---
+    function initGame() {
+        // Altes Ergebnis und Stile zurücksetzen
+        resultDiv.textContent = "";
+        resultDiv.className = "result-message";
+        checkBtn.style.display = 'inline-block';
+
+        // Bestehende verschiebbare Elemente löschen
+        const existingDraggables = wordsColumn.querySelectorAll('.draggable');
+        existingDraggables.forEach(el => el.remove());
+
+        // Dropzonen leeren und Klassen zurücksetzen
+        dropzoneWrappers.forEach(wrapper => {
+            wrapper.classList.remove('correct', 'hovered');
+            wrapper.querySelector('.dropzone').innerHTML = '';
+        });
+
+        // Wörter zufällig mischen
+        const shuffledWords = [...words].sort(() => Math.random() - 0.5);
+
+        // Elemente neu erstellen und Event-Listener binden
+        shuffledWords.forEach(word => {
+            const wordEl = document.createElement('div');
+            wordEl.classList.add('draggable');
+            wordEl.setAttribute('draggable', 'true');
+            wordEl.id = 'word-' + word;
+            wordEl.textContent = word;
+            
+            setupDragAndDropEvents(wordEl);
+            wordsColumn.appendChild(wordEl);
+        });
+    }
+
+    // --- EVENT LISTENERS FÜR DRAG & DROP EINRICHTEN ---
+    function setupDragAndDropEvents(element) {
+        // Maus-Events (Desktop)
+        element.addEventListener('dragstart', () => {
+            if (element.getAttribute('draggable') === 'false') return;
+            element.classList.add('dragging');
+        });
+
+        element.addEventListener('dragend', () => {
+            element.classList.remove('dragging');
+        });
+
+        // Touch-Events (Mobile & Tablets)
+        element.addEventListener('touchstart', function(e) {
+            if (this.getAttribute('draggable') === 'false') return;
+            activeTouchElement = this;
+            this.classList.add('dragging');
+        }, {passive: true});
+
+        element.addEventListener('touchmove', function(e) {
+            if (!activeTouchElement) return;
+            
+            const touch = e.touches[0];
+            activeTouchElement.style.position = 'fixed';
+            activeTouchElement.style.left = (touch.clientX - activeTouchElement.offsetWidth / 2) + 'px';
+            activeTouchElement.style.top = (touch.clientY - activeTouchElement.offsetHeight / 2) + 'px';
+            activeTouchElement.style.zIndex = '1000';
+
+            dropzoneWrappers.forEach(wrapper => {
+                const rect = wrapper.getBoundingClientRect();
+                if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                    touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                    if (!wrapper.classList.contains('correct')) wrapper.classList.add('hovered');
+                } else {
+                    wrapper.classList.remove('hovered');
+                }
+            });
+        }, {passive: true});
+
+        element.addEventListener('touchend', function(e) {
+            if (!activeTouchElement) return;
+            activeTouchElement.classList.remove('dragging');
+            
+            activeTouchElement.style.position = '';
+            activeTouchElement.style.left = '';
+            activeTouchElement.style.top = '';
+            activeTouchElement.style.zIndex = '';
+
+            const touch = e.changedTouches[0];
+            let dropped = false;
+
+            dropzoneWrappers.forEach(wrapper => {
+                const rect = wrapper.getBoundingClientRect();
+                wrapper.classList.remove('hovered');
+
+                if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                    touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                    
+                    const zone = wrapper.querySelector('.dropzone');
+                    if (zone.children.length === 0 && !wrapper.classList.contains('correct')) {
+                        zone.appendChild(activeTouchElement);
+                        dropped = true;
+                    }
+                }
+            });
+
+            if (!dropped) {
+                wordsColumn.appendChild(activeTouchElement);
+            }
+
+            activeTouchElement = null;
+        });
+    }
+
+    // --- STATIC DROPZONE EVENTS (Desktop) ---
+    dropzoneWrappers.forEach(wrapper => {
+        const zone = wrapper.querySelector('.dropzone');
+
+        wrapper.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!wrapper.classList.contains('correct')) {
+                wrapper.classList.add('hovered');
+            }
+        });
+
+        wrapper.addEventListener('dragleave', () => {
+            wrapper.classList.remove('hovered');
+        });
+
+        wrapper.addEventListener('drop', (e) => {
+            e.preventDefault();
+            wrapper.classList.remove('hovered');
+            const draggingEl = document.querySelector('.dragging');
+            
+            if (draggingEl && zone.children.length === 0 && !wrapper.classList.contains('correct')) {
+                zone.appendChild(draggingEl);
+            }
+        });
+    });
+
+    wordsColumn.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+    
+    wordsColumn.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const draggingEl = document.querySelector('.dragging');
+        if (draggingEl) {
+            wordsColumn.appendChild(draggingEl);
+        }
+    });
+
+    // --- AUSWERTUNG ---
+    checkBtn.addEventListener('click', () => {
+        let allCorrect = true;
+        let placedItemsCount = 0;
+
+        dropzoneWrappers.forEach(wrapper => {
+            const zone = wrapper.querySelector('.dropzone');
+            const expectedWord = wrapper.getAttribute('data-match');
+            
+            if (zone.children.length > 0) {
+                placedItemsCount++;
+                const currentWord = zone.children[0].textContent;
+
+                if (currentWord === expectedWord) {
+                    wrapper.classList.add('correct');
+                    zone.children[0].setAttribute('draggable', 'false');
+                } else {
+                    allCorrect = false;
+                    wordsColumn.appendChild(zone.children[0]);
+                }
+            } else {
+                allCorrect = false;
+            }
+        });
+
+        if (placedItemsCount === 0) {
+            resultDiv.style.color = "#e74c3c";
+            resultDiv.textContent = "Bitte ordne zuerst die Wörter zu!";
+        } else if (allCorrect && placedItemsCount === words.length) {
+            resultDiv.className = "result-message success";
+            resultDiv.textContent = "Super! Alles richtig zugeordnet! 🎉";
+            checkBtn.style.display = 'none';
+        } else {
+            resultDiv.style.color = "#e67e22";
+            resultDiv.textContent = "Einige Zuordnungen waren falsch. Sie wurden zurückgelegt. Versuche es noch einmal!";
+        }
+    });
+
+    // --- NEUSTART EVENT ---
+    resetBtn.addEventListener('click', initGame);
+
+    // Erster Spielstart beim Laden der Seite
+    initGame();
+</script>
+
+</body>
+</html>
