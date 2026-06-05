@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch lernen: Interaktive Umfrage</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .poll-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 35px;
+        }
+
+        .meta-tag {
+            display: inline-block;
+            background-color: #eef2f5;
+            color: #7f8c8d;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .translation {
+            font-style: italic;
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        /* Ansicht 1: Abstimmungs-Buttons */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .poll-btn {
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #34495e;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .poll-btn:hover {
+            border-color: #3498db;
+            background-color: #f0f7fc;
+            transform: translateY(-2px);
+        }
+
+        .poll-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Ansicht 2: Diagramm-Ergebnisse */
+        .results-container {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-row {
+            margin-bottom: 20px;
+        }
+
+        .result-label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            font-size: 1rem;
+        }
+
+        /* Dynamischer, responsiver Diagramm-Balken */
+        .bar-track {
+            background-color: #e2e8f0;
+            border-radius: 6px;
+            height: 24px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            background-color: #3498db;
+            height: 100%;
+            width: 0%; /* Wird via JS animiert */
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.1, 0.8, 0.3, 1);
+        }
+
+        /* Farbliche Akzente für die verschiedenen Balken */
+        .row-0 .bar-fill { background-color: #e74c3c; }
+        .row-1 .bar-fill { background-color: #f39c12; }
+        .row-2 .bar-fill { background-color: #2ecc71; }
+
+        .total-votes {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            margin-top: 25px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+        }
+
+        .btn-reset {
+            display: block;
+            background: none;
+            border: none;
+            color: #3498db;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px auto 0 auto;
+            font-size: 0.95rem;
+            text-decoration: underline;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 480px) {
+            .poll-container {
+                padding: 25px 15px;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .translation {
+                font-size: 0.9rem;
+                margin-bottom: 20px;
+            }
+
+            .poll-btn {
+                padding: 14px 15px;
+                font-size: 1rem;
+            }
+
+            .bar-track {
+                height: 20px; /* Etwas flacher auf kleinen Displays */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="poll-container">
+    <span class="meta-tag">Klassen-Votum 📊</span>
+    <h1 id="question-text">Были ли у вас ситуации, когда вы надевали одежду шиворот-навыворот?</h1>
+    <p class="translation">„Hattet ihr schon mal die Situation, dass ihr Kleidung verkehrt herum (Rückseite nach vorne) angezogen habt?“</p>
+
+    <!-- Abstimmungs-Modus -->
+    <div id="vote-view" class="options-list">
+        <button class="poll-btn" onclick="submitVote(0)">Ja, ständig!</button>
+        <button class="poll-btn" onclick="submitVote(1)">Schon mal passiert</button>
+        <button class="poll-btn" onclick="submitVote(2)">Nein, noch nie</button>
+    </div>
+
+    <!-- Ergebnis-Modus -->
+    <div id="results-view" class="results-container">
+        <!-- Balken 1 -->
+        <div class="result-row row-0">
+            <div class="result-label">
+                <span>Ja, ständig!</span>
+                <span id="percent-0">0%</span>
+            </div>
+            <div class="bar-track">
+                <div class="bar-fill" id="bar-0"></div>
+            </div>
+        </div>
+
+        <!-- Balken 2 -->
+        <div class="result-row row-1">
+            <div class="result-label">
+                <span>Schon mal passiert</span>
+                <span id="percent-1">0%</span>
+            </div>
+            <div class="bar-track">
+                <div class="bar-fill" id="bar-1"></div>
+            </div>
+        </div>
+
+        <!-- Balken 3 -->
+        <div class="result-row row-2">
+            <div class="result-label">
+                <span>Nein, noch nie</span>
+                <span id="percent-2">0%</span>
+            </div>
+            <div class="bar-track">
+                <div class="bar-fill" id="bar-2"></div>
+            </div>
+        </div>
+
+        <div class="total-votes" id="vote-count-text">Gesamte abgegebene Stimmen: 0</div>
+        <button class="btn-reset" onclick="resetPoll()">Meinung ändern / Zurück</button>
+    </div>
+</div>
+
+<script>
+    // Repräsentiert die fiktive Datenbasis der Klasse (Simulierte Live-Daten)
+    // Wir starten mit ein paar vordefinierten Stimmen, damit das Diagramm direkt lebendig wirkt.
+    const mockData = {
+        votes: [5, 18, 4], // Index 0: Ständig, Index 1: Schon mal, Index 2: Noch nie
+        userVoted: false
+    };
+
+    const voteView = document.getElementById('vote-view');
+    const resultsView = document.getElementById('results-view');
+    const voteCountText = document.getElementById('vote-count-text');
+
+    function submitVote(optionIndex) {
+        if (mockData.userVoted) return;
+
+        // Eigene Stimme dem Pool hinzufügen
+        mockData.votes[optionIndex]++;
+        mockData.userVoted = true;
+
+        // UI-Wechsel aktivieren
+        voteView.style.display = 'none';
+        resultsView.style.display = 'block';
+
+        // Diagramm zeichnen
+        renderChart();
+    }
+
+    function renderChart() {
+        // Gesamtzahl berechnen
+        const totalVotes = mockData.votes.reduce((a, b) => a + b, 0);
+        voteCountText.textContent = `Anonyme Live-Auswertung (${totalVotes} Stimmen der Klasse)`;
+
+        // Jeden einzelnen Balken proportional berechnen und animieren
+        mockData.votes.forEach((votesForOption, index) => {
+            const percentage = Math.round((votesForOption / totalVotes) * 100);
+            
+            // Textwert setzen
+            document.getElementById(`percent-${index}`).textContent = `${percentage}% (${votesForOption})`;
+            
+            // Breite des Balkens anpassen (wird durch CSS-Transition flüssig animiert)
+            document.getElementById(`bar-${index}`).style.width = `${percentage}%`;
+        });
+    }
+
+    function resetPoll() {
+        // Für Demozwecke: Letzte Stimme wieder abziehen, um neu abstimmen zu können
+        mockData.userVoted = false;
+        
+        // Suche, wo wir eben hinzugefügt haben und ziehe eine fiktive Stimme ab, um den Zustand zu wahren
+        // (In der Praxis lädt man hier einfach das frische Server-Array ohne User-Einfluss)
+        
+        resultsView.style.display = 'none';
+        voteView.style.display = 'flex';
+        
+        // Balken-Breiten sofort nullen für die nächste Animation
+        mockData.votes.forEach((_, index) => {
+            document.getElementById(`bar-${index}`).style.width = `0%`;
+        });
+    }
+</script>
+
+</body>
+</html>
