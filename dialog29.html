@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch lernen: Dialog-Reihenfolge</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 650px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .instruction {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        /* Die Liste der Dialogzeilen */
+        .chronology-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .chronology-item {
+            background-color: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            gap: 15px;
+        }
+
+        .chronology-item.correct-state {
+            border-color: #2ecc71;
+            background-color: #e8f8f0;
+        }
+
+        .chronology-item.wrong-state {
+            border-color: #e74c3c;
+            background-color: #fceae9;
+        }
+
+        .text-content {
+            font-size: 1.15rem;
+            color: #2c3e50;
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        /* Die Steuerungs-Buttons (Pfeile) */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .arrow-btn {
+            background-color: #ffffff;
+            border: 2px solid #bdc3c7;
+            color: #7f8c8d;
+            border-radius: 6px;
+            width: 40px;
+            height: 38px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .arrow-btn:hover:not(:disabled) {
+            background-color: #3498db;
+            border-color: #3498db;
+            color: white;
+        }
+
+        .arrow-btn:active:not(:disabled) {
+            transform: scale(0.92);
+        }
+
+        .arrow-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background-color: #f1f2f6;
+        }
+
+        /* Feedback-Zone */
+        .feedback-zone {
+            text-align: center;
+            min-height: 90px;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #1a252f;
+        }
+
+        .btn-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #616a6b;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+            min-height: 28px;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .game-container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .chronology-item {
+                padding: 12px 15px;
+            }
+
+            .text-content {
+                font-size: 1rem;
+            }
+
+            .controls {
+                flex-direction: row; /* Pfeile nebeneinander auf Smartphones */
+                gap: 8px;
+            }
+
+            .arrow-btn {
+                width: 44px; /* Etwas breiter für Daumen-Bedienung */
+                height: 44px;
+                font-size: 1.3rem;
+            }
+
+            .btn-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Dialog-Chronologie</h1>
+    <p class="instruction">Bringe die Sätze mithilfe der Pfeiltasten in die richtige logische Reihenfolge.</p>
+
+    <div class="chronology-list" id="dialog-list">
+        <!-- Wird dynamisch geladen -->
+    </div>
+
+    <div class="feedback-zone">
+        <div class="btn-container">
+            <button class="btn" id="check-btn">Reihenfolge überprüfen</button>
+            <button class="btn btn-secondary" id="reset-btn">Mischen</button>
+        </div>
+        <div id="result" class="result-message"></div>
+    </div>
+</div>
+
+<script>
+    // Die korrekte Reihenfolge des Dialogs (jeder Satz erhält seine ID als korrekten Index)
+    const correctDialog = [
+        { id: 0, text: "Ира, ты надела свою кофту шиворот-навыворот." },
+        { id: 1, text: "Переоденься!" }
+    ];
+
+    // Für eine bessere Übung fügen wir noch zwei logische Anschluss-Sätze hinzu,
+    // damit das Umsortieren mit 4 Elementen eine spannendere Aufgabe ergibt.
+    const extendedDialog = [
+        { id: 0, text: "Ира, ты надела свою кофту шиворот-навыворот." },
+        { id: 1, text: "Переоденься!" },
+        { id: 2, text: "Ой, точно! Я даже не заметила." },
+        { id: 3, text: "Спасибо, что подсказала." }
+    ];
+
+    let currentItems = [];
+
+    const listContainer = document.getElementById('dialog-list');
+    const checkBtn = document.getElementById('check-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const resultDiv = document.getElementById('result');
+
+    // --- DIALOG MISCHEN & INITIALISIEREN ---
+    function initGame() {
+        resultDiv.textContent = "";
+        resultDiv.style.color = "initial";
+        checkBtn.style.display = 'inline-block';
+
+        // Kopie erstellen und solange mischen, bis sie nicht mehr der Lösung entspricht
+        do {
+            currentItems = [...extendedDialog].sort(() => Math.random() - 0.5);
+        } while (isAlreadyCorrect());
+
+        renderList();
+    }
+
+    function isAlreadyCorrect() {
+        return currentItems.every((item, index) => item.id === index);
+    }
+
+    // --- LISTE RE-RENDERN ---
+    function renderList() {
+        listContainer.innerHTML = '';
+
+        currentItems.forEach((item, index) => {
+            const li = document.createElement('div');
+            li.className = 'chronology-item';
+            li.setAttribute('data-id', item.id);
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'text-content';
+            textSpan.textContent = item.text;
+
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'controls';
+
+            // Button: Nach oben
+            const upBtn = document.createElement('button');
+            upBtn.className = 'arrow-btn';
+            upBtn.innerHTML = '▲';
+            upBtn.title = 'Nach oben verschieben';
+            upBtn.disabled = index === 0; // Erster Button kann nicht hoch
+            upBtn.addEventListener('click', () => moveItem(index, -1));
+
+            // Button: Nach unten
+            const downBtn = document.createElement('button');
+            downBtn.className = 'arrow-btn';
+            downBtn.innerHTML = '▼';
+            downBtn.title = 'Nach unten verschieben';
+            downBtn.disabled = index === currentItems.length - 1; // Letzter Button kann nicht runter
+            downBtn.addEventListener('click', () => moveItem(index, 1));
+
+            controlsDiv.appendChild(upBtn);
+            controlsDiv.appendChild(downBtn);
+            
+            li.appendChild(textSpan);
+            li.appendChild(controlsDiv);
+            listContainer.appendChild(li);
+        });
+    }
+
+    // --- BEWEGUNGS-LOGIK ---
+    function moveItem(index, direction) {
+        // Visuelle Zustände bei Bewegung zurücksetzen
+        resultDiv.textContent = "";
+        const htmlItems = listContainer.querySelectorAll('.chronology-item');
+        htmlItems.forEach(el => el.className = 'chronology-item');
+
+        const targetIndex = index + direction;
+        if (targetIndex >= 0 && targetIndex < currentItems.length) {
+            // Elemente im Array tauschen
+            const temp = currentItems[index];
+            currentItems[index] = currentItems[targetIndex];
+            currentItems[targetIndex] = temp;
+            renderList();
+        }
+    }
+
+    // --- AUSWERTUNG ---
+    checkBtn.addEventListener('click', () => {
+        const htmlItems = listContainer.querySelectorAll('.chronology-item');
+        let allCorrect = true;
+
+        htmlItems.forEach((htmlItem, index) => {
+            const correctId = parseInt(htmlItem.getAttribute('data-id'));
+            
+            htmlItem.classList.remove('correct-state', 'wrong-state');
+
+            // Wenn der aktuelle Index der originalen ID entspricht, ist es richtig platziert
+            if (correctId === index) {
+                htmlItem.classList.add('correct-state');
+            } else {
+                htmlItem.classList.add('wrong-state');
+                allCorrect = false;
+            }
+        });
+
+        if (allCorrect) {
+            resultDiv.style.color = "#2ecc71";
+            resultDiv.textContent = "Hervorragend! Der Dialog ist in der absolut richtigen Reihenfolge! 🎉";
+            checkBtn.style.display = 'none';
+        } else {
+            resultDiv.style.color = "#e67e22";
+            resultDiv.textContent = "Die Reihenfolge stimmt noch nicht ganz. Schau dir die roten Zeilen an!";
+        }
+    });
+
+    resetBtn.addEventListener('click', initGame);
+
+    // Erster Start
+    initGame();
+</script>
+
+</body>
+</html>
