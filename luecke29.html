@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch lernen: Lückentext</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.8;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 650px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        p.instruction {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        /* Der Textbereich */
+        .text-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+
+        .dialog-line {
+            margin-bottom: 15px;
+        }
+
+        .dialog-line:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Styling für die Dropdown-Lücken */
+        .cloze-select {
+            display: inline-block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #34495e;
+            padding: 4px 25px 4px 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            background-color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none; /* Entfernt Standard-Pfeil */
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%2334495e' d='M0 0l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            margin: 0 4px;
+            vertical-align: middle;
+            max-width: 100%;
+        }
+
+        .cloze-select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Validierungs-Zustände */
+        .cloze-select.correct {
+            border-color: #2ecc71;
+            background-color: #e8f8f0;
+            color: #27ae60;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='10' viewBox='0 0 12 10'><path fill='%2327ae60' d='M1 5l3 3 7-7'/></svg>");
+            background-position: right 10px center;
+            padding-right: 28px;
+        }
+
+        .cloze-select.wrong {
+            border-color: #e74c3c;
+            background-color: #fceae9;
+            color: #c0392b;
+        }
+
+        /* Feedback und Buttons */
+        .feedback-zone {
+            text-align: center;
+            min-height: 80px;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #1a252f;
+        }
+
+        .btn-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #616a6b;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 28px;
+        }
+
+        .result-message.success {
+            color: #2ecc71;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .game-container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .text-box {
+                padding: 15px;
+                font-size: 1.05rem;
+                line-height: 2;
+            }
+
+            .cloze-select {
+                font-size: 0.95rem;
+                padding: 4px 20px 4px 6px;
+                background-position: right 6px center;
+            }
+
+            .btn-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Lückentext ausfüllen</h1>
+    <p class="instruction">Wähle die passenden russischen Wörter aus dem Beispieldialog aus.</p>
+
+    <div class="text-box">
+        <div class="dialog-line">
+            Ира, ты 
+            <select class="cloze-select" data-answer="надела">
+                <option value="">...</option>
+                <option value="надел">надел</option>
+                <option value="надела">надела</option>
+                <option value="переоделась">переоделась</option>
+            </select>
+            свою 
+            <select class="cloze-select" data-answer="кофту">
+                <option value="">...</option>
+                <option value="кофта">кофта</option>
+                <option value="кофту">кофту</option>
+                <option value="юбку">юбку</option>
+            </select>
+            <select class="cloze-select" data-answer="шиворот-навыворот">
+                <option value="">...</option>
+                <option value="шиворот-навыворот">шиворот-навыворот</option>
+                <option value="навыворот-шиворот">навыворот-шиворот</option>
+                <option value="прямо-навыворот">прямо-навыворот</option>
+            </select>.
+        </div>
+        <div class="dialog-line">
+            <select class="cloze-select" data-answer="Переоденься">
+                <option value="">...</option>
+                <option value="Оденься">Оденься</option>
+                <option value="Разденься">Разденься</option>
+                <option value="Переоденься">Переоденься</option>
+            </select>!
+        </div>
+    </div>
+
+    <div class="feedback-zone">
+        <div class="btn-container">
+            <button class="btn" id="check-btn">Überprüfen</button>
+            <button class="btn btn-secondary" id="reset-btn">Neustart</button>
+        </div>
+        <div id="result" class="result-message"></div>
+    </div>
+</div>
+
+<script>
+    const checkBtn = document.getElementById('check-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const resultDiv = document.getElementById('result');
+    const selects = document.querySelectorAll('.cloze-select');
+
+    // --- ÜBERPRÜFEN LOGIK ---
+    checkBtn.addEventListener('click', () => {
+        let allCorrect = true;
+        let emptyFields = false;
+
+        selects.forEach(select => {
+            const selectedValue = select.value;
+            const correctAnswer = select.getAttribute('data-answer');
+
+            // Klassen vorab bereinigen
+            select.classList.remove('correct', 'wrong');
+
+            if (selectedValue === "") {
+                emptyFields = true;
+                allCorrect = false;
+            } else if (selectedValue === correctAnswer) {
+                select.classList.add('correct');
+            } else {
+                select.classList.add('wrong');
+                allCorrect = false;
+            }
+        });
+
+        // Feedback-Meldungen steuern
+        if (emptyFields) {
+            resultDiv.style.color = "#e74c3c";
+            resultDiv.textContent = "Bitte fülle zuerst alle Lücken aus!";
+        } else if (allCorrect) {
+            resultDiv.className = "result-message success";
+            resultDiv.textContent = "Hervorragend! Der Dialog ist vollkommen richtig! 🎉";
+            checkBtn.style.display = 'none'; // Verstecke Prüfen-Button bei Erfolg
+        } else {
+            resultDiv.style.color = "#e67e22";
+            resultDiv.textContent = "Einige Antworten sind noch nicht richtig. Korrigiere die roten Lücken!";
+        }
+    });
+
+    // --- NEUSTART LOGIK ---
+    resetBtn.addEventListener('click', () => {
+        selects.forEach(select => {
+            select.value = ""; // Wert zurücksetzen
+            select.classList.remove('correct', 'wrong'); // Farben entfernen
+        });
+        resultDiv.textContent = "";
+        resultDiv.className = "result-message";
+        checkBtn.style.display = 'inline-block'; // Prüfen-Button wieder einblenden
+    });
+</script>
+
+</body>
+</html>
