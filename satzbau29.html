@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch lernen: Satzbau-Umschütteln</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 700px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .translation-box {
+            background-color: #ebf5fb;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        /* Bereich für die richtig zusammengesetzten Wörter */
+        .sentence-display {
+            background-color: #f8fafc;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            min-height: 65px;
+            padding: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap; /* Wichtig für Reflow auf Handys */
+            gap: 8px;
+            align-items: center;
+        }
+
+        .sentence-display.completed {
+            border-color: #2ecc71;
+            background-color: #e8f8f0;
+        }
+
+        /* Wort-Buttons Pool (unten) */
+        .words-pool {
+            display: flex;
+            flex-wrap: wrap; /* Automatischer Zeilenumbruch */
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            min-height: 50px;
+        }
+
+        /* Styling der einzelnen Wort-Buttons */
+        .word-btn {
+            background-color: #ffffff;
+            color: #34495e;
+            border: 2px solid #34495e;
+            padding: 10px 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s ease;
+        }
+
+        @media (hover: hover) {
+            .word-btn:hover:not(.placed) {
+                background-color: #34495e;
+                color: #ffffff;
+            }
+        }
+
+        /* Zustand im oberen Anzeigebereich */
+        .word-btn.placed {
+            background-color: #2c3e50;
+            color: #ffffff;
+            border-color: #2c3e50;
+            cursor: default;
+        }
+
+        /* Zustand bei Fehlklick */
+        .word-btn.shake {
+            background-color: #e74c3c !important;
+            color: #ffffff !important;
+            border-color: #e74c3c !important;
+            animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        /* Steuerungsbereich */
+        .controls {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-action {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: #1a252f;
+        }
+
+        .btn-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #616a6b;
+        }
+
+        .success-message {
+            color: #2ecc71;
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-height: 30px;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .game-container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .translation-box {
+                font-size: 1rem;
+                padding: 12px;
+            }
+
+            .word-btn {
+                padding: 8px 12px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Satzbau-Umschütteln</h1>
+    <div class="progress-text" id="progress">Satz 1 von 6</div>
+    
+    <div class="translation-box" id="translation">
+        <!-- Deutsche Übersetzung -->
+    </div>
+
+    <div class="sentence-display" id="display-area">
+        <!-- Hier landen die korrekten Wörter -->
+    </div>
+
+    <div class="words-pool" id="pool-area">
+        <!-- Hier liegen die gemischten Wörter -->
+    </div>
+
+    <div class="controls">
+        <div id="status-message" class="success-message"></div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-action" id="next-btn" style="display: none;">Nächster Satz</button>
+            <button class="btn-action btn-secondary" id="reset-btn">Neustart</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Die 6 Sätze basierend auf der Anleitung
+    const dataSet = [
+        {
+            german: "„Ira, du hast deine Jacke verkehrt herum angezogen.“",
+            words: ["Ира,", "ты", "надела", "свою", "кофту", "шиворот-навыворот."]
+        },
+        {
+            german: "„Zieh dich um!“",
+            words: ["Переоденься!"]
+        },
+        {
+            german: "„Wissen Sie, was verkehrt herum bedeutet?“",
+            words: ["Знаете", "ли", "вы,", "что", "значит", "шиворот-навыворот?"]
+        },
+        {
+            german: "„Wenn ich so auf die Straße gehe...“",
+            words: ["Если", "я", "выйду", "на", "улицу", "так..."]
+        },
+        {
+            german: "„Jemand kann zu mir sagen...“",
+            words: ["Кто-то", "может", "сказать", "мне..."]
+        },
+        {
+            german: "„Hatten Sie schon mal solche Situationen?“",
+            words: ["Были", "ли", "у", "вас", "такие", "ситуации?"]
+        }
+    ];
+
+    let currentSentenceIndex = 0;
+    let expectedWordIndex = 0;
+
+    const progressText = document.getElementById('progress');
+    const translationBox = document.getElementById('translation');
+    const displayArea = document.getElementById('display-area');
+    const poolArea = document.getElementById('pool-area');
+    const statusMessage = document.getElementById('status-message');
+    const nextBtn = document.getElementById('next-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    // Satz laden
+    function loadSentence() {
+        displayArea.innerHTML = '';
+        poolArea.innerHTML = '';
+        statusMessage.textContent = '';
+        nextBtn.style.display = 'none';
+        displayArea.classList.remove('completed');
+        
+        expectedWordIndex = 0;
+        
+        const currentData = dataSet[currentSentenceIndex];
+        progressText.textContent = `Satz ${currentSentenceIndex + 1} von ${dataSet.length}`;
+        translationBox.innerHTML = `<strong>Bedeutung:</strong> ${currentData.german}`;
+
+        // Wörter klonen und für den Pool mischen
+        const shuffledWords = [...currentData.words].sort(() => Math.random() - 0.5);
+
+        // Wort-Buttons im Pool erstellen
+        shuffledWords.forEach((word, index) => {
+            const btn = document.createElement('button');
+            btn.classList.add('word-btn');
+            btn.textContent = word;
+            btn.dataset.originalIndex = currentData.words.indexOf(word); // Speichert die korrekte Position im Satz
+            
+            // Direktes Feedback beim Klick
+            btn.addEventListener('click', () => handleWordClick(btn, word));
+            poolArea.appendChild(btn);
+        });
+    }
+
+    // Klick-Logik mit Sofort-Validierung
+    function handleWordClick(btn, word) {
+        // Ignorieren, wenn das Wort schon richtig platziert wurde
+        if (btn.classList.contains('placed') || btn.classList.contains('shake')) return;
+
+        const currentData = dataSet[currentSentenceIndex];
+        const correctTargetWord = currentData.words[expectedWordIndex];
+
+        // Prüfung: Entspricht das geklickte Wort dem exakt nächsten erwarteten Wort?
+        if (word === correctTargetWord) {
+            // Richtig!
+            btn.classList.add('placed');
+            
+            // Kopie des Buttons oben einfügen
+            const placedWord = document.createElement('button');
+            placedWord.classList.add('word-btn', 'placed');
+            placedWord.textContent = word;
+            displayArea.appendChild(placedWord);
+            
+            // Aus dem Pool löschen
+            btn.style.visibility = 'hidden';
+            
+            expectedWordIndex++;
+
+            // Prüfen, ob der Satz vollständig ist
+            if (expectedWordIndex === currentData.words.length) {
+                handleSentenceComplete();
+            }
+        } else {
+            // Falsch! Rotes Blinken (Shake-Animation) auslösen
+            btn.classList.add('shake');
+            setTimeout(() => {
+                btn.classList.remove('shake');
+            }, 300);
+        }
+    }
+
+    // Wenn der aktuelle Satz fehlerfrei beendet wurde
+    function handleSentenceComplete() {
+        displayArea.classList.add('completed');
+        
+        if (currentSentenceIndex < dataSet.length - 1) {
+            statusMessage.textContent = "Sehr gut! 🎉";
+            nextBtn.style.display = 'inline-block';
+        } else {
+            statusMessage.textContent = "Fantastisch! Du hast alle 6 Sätze fehlerfrei gemeistert! 🏆";
+            nextBtn.style.display = 'none';
+        }
+    }
+
+    // Event-Listener
+    nextBtn.addEventListener('click', () => {
+        currentSentenceIndex++;
+        loadSentence();
+    });
+
+    resetBtn.addEventListener('click', () => {
+        currentSentenceIndex = 0;
+        loadSentence();
+    });
+
+    // Erster Spielstart
+    loadSentence();
+</script>
+
+</body>
+</html>
