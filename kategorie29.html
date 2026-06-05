@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch lernen: Kategorisierungs-Spiel</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 700px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .instruction {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        /* Das aktuell einsortierende Wort */
+        .word-display-zone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 110px;
+            margin-bottom: 30px;
+            background: #eef2f5;
+            border-radius: 8px;
+            border: 2px dashed #cbd5e1;
+            position: relative;
+        }
+
+        .current-word {
+            background: #3498db;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 12px 30px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Die Körbe / Kategorien */
+        .baskets-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .basket {
+            flex: 1;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .basket:hover {
+            border-color: #3498db;
+            background: #f0f7fc;
+            transform: translateY(-3px);
+        }
+
+        .basket:active {
+            transform: translateY(0);
+        }
+
+        .basket h2 {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .basket-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 120px;
+        }
+
+        .sorted-item {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            color: #475569;
+            font-weight: 500;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            0% { transform: translateY(-10px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Feedback-Banner im Korb */
+        .basket.pulse-correct {
+            animation: correctFlash 0.4s ease;
+        }
+        .basket.pulse-wrong {
+            animation: wrongFlash 0.4s ease;
+        }
+
+        @keyframes correctFlash {
+            0% { background-color: #f8fafc; border-color: #e2e8f0; }
+            50% { background-color: #e8f8f0; border-color: #2ecc71; }
+            100% { background-color: #f8fafc; border-color: #e2e8f0; }
+        }
+        @keyframes wrongFlash {
+            0% { background-color: #f8fafc; border-color: #e2e8f0; }
+            50% { background-color: #fceae9; border-color: #e74c3c; }
+            100% { background-color: #f8fafc; border-color: #e2e8f0; }
+        }
+
+        /* Endbildschirm & Reset */
+        .end-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .btn-restart {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .btn-restart:hover {
+            background-color: #1a252f;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 550px) {
+            .baskets-container {
+                flex-direction: column; /* Körbe stehen untereinander auf dem Smartphone */
+                gap: 15px;
+            }
+
+            .game-container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .basket {
+                padding: 15px;
+            }
+
+            .basket h2 {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+
+            .basket-items {
+                min-height: auto; /* Auf Handys schrumpfen leere Körbe platzsparend zusammen */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div id="game-view">
+        <h1>Wörter einsortieren</h1>
+        <p class="instruction">Tippe auf den richtigen Korb, um das blaue Wort zuzuordnen!</p>
+
+        <div class="word-display-zone">
+            <div class="current-word" id="active-word"><!-- Dynamisch --></div>
+        </div>
+
+        <div class="baskets-container">
+            <!-- Korb A -->
+            <div class="basket" id="basket-A" onclick="checkSort('A')">
+                <h2>🧺 Kleidung & Bewegung</h2>
+                <div class="basket-items" id="items-A"></div>
+            </div>
+
+            <!-- Korb B -->
+            <div class="basket" id="basket-B" onclick="checkSort('B')">
+                <h2>🧺 Zustand & Richtung</h2>
+                <div class="basket-items" id="items-B"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Endansicht -->
+    <div id="end-view" class="end-screen" style="display: none;">
+        <h1>Klasse gemacht!</h1>
+        <p style="font-size: 1.2rem; margin: 15px 0;" id="score-text"></p>
+        <button class="btn-restart" onclick="initGame()">Nochmal spielen</button>
+    </div>
+</div>
+
+<script>
+    // Wortschatz-Datenbank: Exakt auf 6 Wörter balanciert (3 pro Kategorie)
+    const wordsPool = [
+        { word: "кофта", category: "A" },
+        { word: "переоденься", category: "A" },
+        { word: "надела", category: "A" },
+        { word: "шиворот-навыворот", category: "B" },
+        { word: "навыворот", category: "B" },
+        { word: "наоборот", category: "B" }
+    ];
+
+    let remainingWords = [];
+    let currentItem = null;
+    let mistakes = 0;
+
+    const activeWordDiv = document.getElementById('active-word');
+    const itemsADiv = document.getElementById('items-A');
+    const itemsBDiv = document.getElementById('items-B');
+    const gameView = document.getElementById('game-view');
+    const endView = document.getElementById('end-view');
+    const scoreText = document.getElementById('score-text');
+
+    function initGame() {
+        mistakes = 0;
+        itemsADiv.innerHTML = '';
+        itemsBDiv.innerHTML = '';
+        endView.style.display = 'none';
+        gameView.style.display = 'block';
+
+        // Wörter mischen
+        remainingWords = [...wordsPool].sort(() => Math.random() - 0.5);
+        nextWord();
+    }
+
+    function nextWord() {
+        if (remainingWords.length > 0) {
+            currentItem = remainingWords.pop();
+            activeWordDiv.textContent = currentItem.word;
+            
+            // CSS-Trigger für Pop-In Animation zurücksetzen
+            activeWordDiv.style.animation = 'none';
+            activeWordDiv.offsetHeight; 
+            activeWordDiv.style.animation = null;
+        } else {
+            showEndScreen();
+        }
+    }
+
+    function checkSort(chosenCategory) {
+        if (!currentItem) return;
+
+        const targetBasket = document.getElementById(`basket-${chosenCategory}`);
+        
+        // Animationen säubern
+        targetBasket.classList.remove('pulse-correct', 'pulse-wrong');
+        targetBasket.offsetHeight;
+
+        if (chosenCategory === currentItem.category) {
+            // Richtig sortiert
+            targetBasket.classList.add('pulse-correct');
+            
+            // Wort visuell in den Korb legen
+            const wordTag = document.createElement('div');
+            wordTag.className = 'sorted-item';
+            wordTag.textContent = currentItem.word;
+            document.getElementById(`items-${chosenCategory}`).appendChild(wordTag);
+            
+            nextWord();
+        } else {
+            // Falsch sortiert
+            targetBasket.classList.add('pulse-wrong');
+            mistakes++;
+        }
+    }
+
+    function showEndScreen() {
+        gameView.style.display = 'none';
+        endView.style.display = 'block';
+        if (mistakes === 0) {
+            scoreText.textContent = "Fehlerfrei gelöst! Du hast alle 6 Begriffe perfekt zugeordnet! 🏆";
+        } else {
+            scoreText.textContent = `Du hast alle 6 Wörter einsortiert. (Versuche: ${mistakes} Fehler korrigiert)`;
+        }
+    }
+
+    // Spielstart
+    initGame();
+</script>
+
+</body>
+</html>
