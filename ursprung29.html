@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch lernen: Herkunft von шиворот</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 650px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .question-box {
+            background-color: #f8fafc;
+            border-left: 5px solid #3498db;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Responsive Buttons über die volle Breite */
+        .answers-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .answer-btn {
+            width: 100%; /* Volle Breite für maximale Daumen-Erreichbarkeit */
+            background-color: #ffffff;
+            color: #34495e;
+            border: 2px solid #bdc3c7;
+            padding: 16px 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Hover-Effekt nur auf Geräten mit Maus-Zeiger */
+        @media (hover: hover) {
+            .answer-btn:hover:not(:disabled) {
+                background-color: #f2f4f4;
+                border-color: #7f8c8d;
+                transform: translateY(-1px);
+            }
+        }
+
+        /* Zustände nach dem Klicken */
+        .answer-btn.correct {
+            background-color: #e8f8f0;
+            border-color: #2ecc71;
+            color: #196f3d;
+            font-weight: 600;
+        }
+
+        .answer-btn.wrong {
+            background-color: #fceae9;
+            border-color: #e74c3c;
+            color: #943126;
+            opacity: 0.8;
+        }
+
+        .answer-btn:disabled {
+            cursor: default;
+        }
+
+        /* Feedback-Zone */
+        .feedback-zone {
+            text-align: center;
+            min-height: 90px;
+        }
+
+        .explanation-text {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ebf5fb;
+            border-radius: 6px;
+            border: 1px solid #d4e6f1;
+            text-align: left;
+        }
+
+        .btn-action {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: bold;
+        }
+
+        .btn-action:hover {
+            background-color: #1a252f;
+        }
+
+        /* Kleine Anpassungen für Smartphones */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .game-container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+                margin-bottom: 20px;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .answer-btn {
+                padding: 14px 16px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Historischer Ursprung</h1>
+    
+    <div class="question-box">
+        <div class="question-text">Was bedeutete das russische Wort шиворот historisch?</div>
+    </div>
+
+    <div class="answers-container" id="answers-grid">
+        </div>
+
+    <div class="feedback-zone">
+        <div id="explanation" style="display: none;">
+            <div class="explanation-text">
+                <strong>Richtig!</strong> Im alten Russland bezeichnete <strong>шиворот</strong> den bestickten Kragen der Oberbekleidung von Bojaren (Adligen). Wurde jemand zur Strafe oder Schande im wahrsten Sinne des Wortes „umgedreht“ auf ein Pferd gesetzt, trug er den Kragen verkehrt herum. Daraus entstand die heutige Redewendung für etwas, das falsch herum oder auf links gedreht ist.
+            </div>
+            <button class="btn-action" id="reset-btn">Nochmal versuchen</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Antwortoptionen deklarieren (wahr/falsch Kennzeichnung)
+    const options = [
+        { text: 'Kragen', isCorrect: true },
+        { text: 'Ärmel', isCorrect: false },
+        { text: 'Knopf', isCorrect: false },
+        { text: 'Hose', isCorrect: false }
+    ];
+
+    const answersGrid = document.getElementById('answers-grid');
+    const explanationDiv = document.getElementById('explanation');
+    const resetBtn = document.getElementById('reset-btn');
+
+    // Quiz initialisieren und Antworten mischen
+    function initQuiz() {
+        answersGrid.innerHTML = '';
+        explanationDiv.style.display = 'none';
+
+        // Optionen zufällig mischen
+        const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+
+        // Buttons erzeugen
+        shuffledOptions.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.classList.add('answer-btn');
+            btn.textContent = opt.text;
+            
+            // Event-Listener bei Klick
+            btn.addEventListener('click', () => handleAnswerSelect(btn, opt.isCorrect));
+            answersGrid.appendChild(btn);
+        });
+    }
+
+    // Logik bei der Antwortauswahl
+    function handleAnswerSelect(selectedBtn, isCorrect) {
+        const allButtons = document.querySelectorAll('.answer-btn');
+
+        // Alle Knöpfe sperren, damit nach der Auflösung nichts mehr geklickt werden kann
+        allButtons.forEach(btn => btn.disabled = true);
+
+        if (isCorrect) {
+            selectedBtn.classList.add('correct');
+            // Erklärung direkt einblenden
+            explanationDiv.style.display = 'block';
+        } else {
+            selectedBtn.classList.add('wrong');
+            
+            // Nach kurzer Verzögerung die richtige Option grün hervorheben und auflösen
+            setTimeout(() => {
+                allButtons.forEach(btn => {
+                    // Suchen der korrekten Antwort anhand des Textes aus dem Ursprungs-Array
+                    if (btn.textContent === options.find(o => o.isCorrect).text) {
+                        btn.classList.add('correct');
+                    }
+                });
+                explanationDiv.style.display = 'block';
+            }, 600);
+        }
+    }
+
+    // Event-Listener für den Neustart-Button
+    resetBtn.addEventListener('click', initQuiz);
+
+    // Initialer Start beim Laden der Seite
+    initQuiz();
+</script>
+
+</body>
+</html>
